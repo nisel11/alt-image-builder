@@ -43,7 +43,6 @@ runs:
     - name: Start hasher-privd.service
       shell: bash
       run: |
-        sudo podman exec alt-builder systemctl status
         sudo podman exec alt-builder systemctl start hasher-privd.service
 
     - name: Build image
