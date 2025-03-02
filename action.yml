@@ -1,0 +1,64 @@
+name: 'ALT Linux Image Builder'
+description: 'Builder of ALT Linux images'
+inputs:
+  image:
+    description: 'Image name (like live-rescue.iso)'
+    required: true
+    default: 'live-rescue.iso'
+runs:
+  using: "composite"
+  steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: Install podman
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman
+
+    - name: Pull alt-builder image
+      shell: bash
+      run: |
+        sudo podman pull ghcr.io/nisel11/alt-builder:latest
+
+    - name: Run container
+      shell: bash
+      run: |
+        sudo podman run -d --privileged \
+          --systemd=always \
+          --cap-add=ALL \
+          --name alt-builder \
+          --tmpfs /run \
+          --tmpfs /run/lock \
+          -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+          -v "${{ github.workspace }}:/workspace" \
+          ghcr.io/nisel11/alt-builder:latest
+
+    - name: Wait for systemd
+      shell: bash
+      run: |
+        timeout 30 bash -c 'until sudo podman exec alt-builder systemctl is-active dbus; do sleep 1; done'
+
+    - name: Start hasher-privd.service
+      shell: bash
+      run: |
+        sudo podman exec alt-builder systemctl status
+        sudo podman exec alt-builder systemctl start hasher-privd.service
+
+    - name: Build image
+      shell: bash
+      run: |
+        sudo podman exec alt-builder su - builder -c "cd ~ && git clone https://github.com/${{ github.repository }} mkimage-profiles && cd mkimage-profiles && make ${{ inputs.image }}"
+
+    - name: Move image
+      shell: bash
+      run: |
+        mkdir -p ${{ github.workspace }}/out
+        sudo podman cp alt-builder:/home/builder/out/. ${{ github.workspace }}/out/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.image }}
+        path: out/
