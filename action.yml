@@ -40,10 +40,12 @@ runs:
       run: |
         timeout 30 bash -c 'until sudo podman exec alt-builder systemctl is-active dbus; do sleep 1; done'
 
-    - name: Start hasher-privd.service
+    - name: Start hasher-privd.service and fix /workspace permission
       shell: bash
       run: |
         sudo podman exec alt-builder systemctl start hasher-privd.service
+        sudo podman exec alt-builder chown -R builder:builder /workspace
+        sudo podman exec alt-builder chmod -R u+w /workspace
 
     - name: Build image
       shell: bash
