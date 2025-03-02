@@ -50,7 +50,15 @@ runs:
     - name: Build image
       shell: bash
       run: |
-        sudo podman exec alt-builder su - builder -c "cd ~ && git clone https://github.com/${{ github.repository }} mkimage-profiles && cd mkimage-profiles && make NO_SYMLINK=1 IMAGEDIR="/workspace" BUILDLOG="/workspace/build.log" ${{ inputs.image }}"
+        sudo podman exec alt-builder su - builder -c \
+          "cd ~ && \
+          git clone https://github.com/${{ github.repository }} mkimage-profiles && \
+          cd mkimage-profiles && \
+          make \
+          NO_SYMLINK=1 \
+          IMAGEDIR="/workspace/out" \
+          BUILDLOG="/workspace/out/build.log" \
+          ${{ inputs.image }}"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
