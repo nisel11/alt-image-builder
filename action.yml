@@ -35,15 +35,9 @@ runs:
           -v "${{ github.workspace }}:/workspace" \
           ghcr.io/nisel11/alt-builder:latest
 
-    - name: Wait for systemd
+    - name: Fix /workspace permission
       shell: bash
       run: |
-        timeout 30 bash -c 'until sudo podman exec alt-builder systemctl is-active dbus; do sleep 1; done'
-
-    - name: Start hasher-privd.service and fix /workspace permission
-      shell: bash
-      run: |
-        sudo podman exec alt-builder systemctl start hasher-privd.service
         sudo podman exec alt-builder chown -R builder:builder /workspace
         sudo podman exec alt-builder chmod -R u+w /workspace
 
@@ -55,7 +49,6 @@ runs:
           git clone https://github.com/${{ github.repository }} mkimage-profiles && \
           cd mkimage-profiles && \
           make \
-          NO_SYMLINK=1 \
           IMAGEDIR="/workspace/out" \
           BUILDLOG="/workspace/out/build.log" \
           ${{ inputs.image }}"
