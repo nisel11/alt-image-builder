@@ -48,13 +48,7 @@ runs:
     - name: Build image
       shell: bash
       run: |
-        sudo podman exec alt-builder su - builder -c "cd ~ && git clone https://github.com/${{ github.repository }} mkimage-profiles && cd mkimage-profiles && make ${{ inputs.image }}"
-
-    - name: Move image
-      shell: bash
-      run: |
-        mkdir -p ${{ github.workspace }}/out
-        sudo podman cp alt-builder:/home/builder/out/. ${{ github.workspace }}/out/
+        sudo podman exec alt-builder su - builder -c "cd ~ && git clone https://github.com/${{ github.repository }} mkimage-profiles && cd mkimage-profiles && make NO_SYMLINK=1 IMAGEDIR="/workspace" BUILDLOG="/workspace/build.log" ${{ inputs.image }}"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
