@@ -3,7 +3,13 @@ name: Build and Push alt-builder Image
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'rootfs_alt_systemd.tar.xz'
+      - 'Containerfile'
   pull_request:
+    paths:
+      - 'rootfs_alt_systemd.tar.xz'
+      - 'Containerfile'
 
 env:
   REGISTRY_USER: ${{ github.actor }}
