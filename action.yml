@@ -52,7 +52,7 @@ runs:
       run: |
         sudo podman exec alt-builder su - builder -c \
           "cd ~ && \
-          git clone https://github.com/${{ github.repository }} mkimage-profiles && \
+          git clone https://github.com/${{ github.repository }} --branch ${GITHUB_REF##*/} mkimage-profiles && \
           cd mkimage-profiles && \
           make \
           IMAGEDIR="/workspace/out" \
